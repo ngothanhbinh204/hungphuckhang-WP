@@ -285,3 +285,47 @@ add_filter('manage_product_cat_custom_column', function ($content, $column_name,
     return $content;
 
 }, 10, 3);
+
+// add cột hiển thị Loại Hình (móc từ product_cat) ở màn list Sản Phẩm
+add_filter('manage_edit-product_columns', function ($columns) {
+    $new_columns = array();
+    foreach ($columns as $key => $title) {
+        $new_columns[$key] = $title;
+        // Chèn vào vị trí ngay sau cột Danh Mục
+        if ($key === 'taxonomy-product_cat') {
+            $new_columns['product_cat_type_col'] = 'Loại Hình';
+        }
+    }
+    // Nếu ko thấy cột Danh Mục gốc thì ném xuống cuối
+    if (!isset($new_columns['product_cat_type_col'])) {
+        $new_columns['product_cat_type_col'] = 'Loại Hình';
+    }
+    return $new_columns;
+});
+
+add_action('manage_product_posts_custom_column', function ($column_name, $post_id) {
+    if ($column_name === 'product_cat_type_col') {
+        $terms = get_the_terms($post_id, 'product_cat');
+        if ($terms && !is_wp_error($terms)) {
+            $types_found = array();
+            foreach ($terms as $term) {
+                $cat_types = get_field('product_cat_type', $term);
+                if (!empty($cat_types)) {
+                    foreach ($cat_types as $type_id) {
+                        $type_term = get_term($type_id, 'product_type');
+                        if ($type_term && !is_wp_error($type_term)) {
+                            $types_found[$type_term->term_id] = $type_term->name;
+                        }
+                    }
+                }
+            }
+            if (!empty($types_found)) {
+                echo implode(', ', $types_found);
+            } else {
+                echo '—';
+            }
+        } else {
+            echo '—';
+        }
+    }
+}, 10, 2);

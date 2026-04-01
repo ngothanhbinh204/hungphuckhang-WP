@@ -8,32 +8,75 @@ if ( is_category() || is_tax() || is_tag() ) {
 	$id = get_the_ID();
 }
 
-$banner_url = '';
+$banners = array();
+$alt_text = is_archive() ? post_type_archive_title('', false) : get_the_title();
 
-// 1. Thử lấy banner cục bộ được gán cho trang hiện tại/danh mục hiện tại trước
+// Get local banners
 $local_banners = get_field('banner_select_page', $id);
-if ( $local_banners ) {
-    // Lấy banner đầu tiên trong danh sách chọn (đối tượng WP_Post)
-    $banner_post = is_array($local_banners) ? $local_banners[0] : $local_banners;
-    $banner_url = get_the_post_thumbnail_url($banner_post->ID, 'full');
-}
-
-// 2. Nếu không có banner cục bộ, thử lấy banner chung từ Options (Archive Banner)
-if ( !$banner_url ) {
-    $archive_banner_global = get_field('archive_product_banner', 'options');
-    if ( $archive_banner_global ) {
-        $banner_url = is_array($archive_banner_global) ? $archive_banner_global['url'] : $archive_banner_global;
+if ( $local_banners && is_array($local_banners) ) {
+    foreach ( $local_banners as $banner_post ) {
+        $banner_url = get_the_post_thumbnail_url($banner_post->ID, 'full');
+        if ( $banner_url ) {
+            $banners[] = array(
+                'url' => $banner_url,
+                'alt' => get_the_title($banner_post->ID)
+            );
+        }
+    }
+} elseif ( $local_banners && is_object($local_banners) ) {
+    $banner_url = get_the_post_thumbnail_url($local_banners->ID, 'full');
+    if ( $banner_url ) {
+        $banners[] = array(
+            'url' => $banner_url,
+            'alt' => get_the_title($local_banners->ID)
+        );
     }
 }
 
-// 3. Fallback mặc định
-if ( !$banner_url ) {
-    $banner_url = get_template_directory_uri() . '/img/1.jpg';
+// Fallback to global banner
+if ( empty($banners) ) {
+    $archive_banner_global = get_field('archive_product_banner', 'options');
+    if ( $archive_banner_global ) {
+        $banner_url = is_array($archive_banner_global) ? $archive_banner_global['url'] : $archive_banner_global;
+        if ( $banner_url ) {
+            $banners[] = array(
+                'url' => $banner_url,
+                'alt' => $alt_text
+            );
+        }
+    }
+}
+
+// Final fallback
+if ( empty($banners) ) {
+    $banners[] = array(
+        'url' => get_template_directory_uri() . '/img/1.jpg',
+        'alt' => $alt_text
+    );
 }
 ?>
 
 <section class="page-banner-main banner-2">
-    <div class="img img-ratio pt-[calc(664/1920*100rem)]">
-        <img class="lozad" data-src="<?php echo esc_url($banner_url); ?>" alt="<?php echo is_archive() ? post_type_archive_title('', false) : get_the_title(); ?>" />
-    </div>
+	<div class="banner-slide" data-slide-count="<?php echo count($banners); ?>">
+		<div class="swiper">
+			<div class="swiper-wrapper">
+				<?php foreach ( $banners as $banner ) : ?>
+					<div class="swiper-slide">
+						<div class="slide-item">
+							<div class="slide-bg">
+								<a class="img-ratio ratio:pt-[1200_1920] lg:ratio:pt-[880_1920]" href="#">
+									<img class="lozad" data-src="<?php echo esc_url($banner['url']); ?>" alt="<?php echo esc_attr($banner['alt']); ?>">
+								</a>
+							</div>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
+			<div class="swiper-pagination"></div>
+		</div>
+		<div class="slide-controls">
+			<div class="btn-prev"><i class="fa-thin fa-chevron-left"></i></div>
+			<div class="btn-next"><i class="fa-thin fa-chevron-right"></i></div>
+		</div>
+	</div>
 </section>

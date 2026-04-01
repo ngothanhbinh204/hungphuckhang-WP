@@ -10,14 +10,11 @@ if ( !isset($is_included_in_page) ) {
 /* ── MAPPING ProductList.html → archive-product.php ── */
 
 if ( !isset($is_included_in_page) ) {
-	// 1. Banner (Lấy từ Options hoặc Taxonomy nếu cần)
 	get_template_part('modules/common/banner');
 
-	// 2. Breadcrumb
 	get_template_part('template-parts/section/global/breadcrumb');
 }
 
-// Logic: Check if we are on Bán Máy Page (Page Template)
 $is_product_page_template = is_page_template('templates/template-product-list.php');
 $current_term = get_queried_object();
 $raw_terms = get_terms(array(
@@ -25,24 +22,20 @@ $raw_terms = get_terms(array(
 	'hide_empty' => true,
 ));
 
-// ACF: Lấy cấu hình Loại hình sản phẩm hiển thị của Trang hiện tại
 $current_page_id = get_queried_object_id();
 $selected_product_types = get_field('page_product_type', $current_page_id);
 
-// Lọc lại các Danh mục để chỉ hiển thị các Danh mục khớp với Loại hình (Bán máy/Cho thuê) của trang
 $terms = array();
 if ($raw_terms && !is_wp_error($raw_terms)) {
 	foreach ($raw_terms as $term) {
 		$cat_product_types = get_field('product_cat_type', $term);
 
-		// Nếu danh mục có gán Loại hình cụ thể, nó phải trùng khớp ít nhất 1 loại hình với trang hiện tại
 		if (!empty($cat_product_types) && !empty($selected_product_types)) {
-			$overlap = array_intersect($cat_product_types, $selected_product_types);
+			$overlap = array_intersect((array)$cat_product_types, (array)$selected_product_types);
 			if (!empty($overlap)) {
 				$terms[] = $term;
 			}
 		} 
-		// Nếu danh mục CHƯA được cấu hình gán vào Loại hình nào, thì hiển thị mặc định
 		else if (empty($cat_product_types)) {
 			$terms[] = $term;
 		}
@@ -51,15 +44,11 @@ if ($raw_terms && !is_wp_error($raw_terms)) {
 
 $first_term = (!empty($terms)) ? $terms[0] : null;
 
-// Filter Values from URL
 $min_price = isset($_GET['min_price']) ? intval($_GET['min_price']) : 0;
 $max_price = isset($_GET['max_price']) ? intval($_GET['max_price']) : 500000000; // 500tr fallback
 $url_cat   = isset($_GET['product_cat']) ? sanitize_text_field($_GET['product_cat']) : '';
 
-// Base URL for filters (category links, form action)
 $base_url = isset($filter_base_url) ? $filter_base_url : '';
-
-// Active Category Logic
 $active_cat_id = 0;
 if ( is_tax('product_cat') ) {
 	$active_cat_id = $current_term->term_id;
@@ -211,33 +200,28 @@ $ajax_class = (isset($is_ajax_filter) && $is_ajax_filter) ? 'ajax-filter-enabled
 								'field'    => 'slug',
 								'terms'    => $url_cat
 							);
-						}
-
-						// Filter by Product Type via ACF configuration
-						if ( !empty($selected_product_types) ) {
-							if ( $include_empty ) {
-								// Include specific terms OR products that have NO product_type term
-								$tax_query[] = array(
-									'relation' => 'OR',
-									array(
-										'taxonomy' => 'product_type',
+						} else {
+							// Filter by Product Cat matching the current page's Product Type
+							if ( !empty($selected_product_types) ) {
+								$valid_cat_ids = wp_list_pluck($terms, 'term_id');
+								
+								// Nếu có danh mục hợp lệ thì query posts thuộc các danh mục đó
+								if (!empty($valid_cat_ids)) {
+									$tax_query[] = array(
+										'taxonomy' => 'product_cat',
 										'field'    => 'term_id',
-										'terms'    => $selected_product_types,
+										'terms'    => $valid_cat_ids,
 										'operator' => 'IN'
-									),
-									array(
-										'taxonomy' => 'product_type',
-										'operator' => 'NOT EXISTS' // Lấy cả những SP chưa được gắn Loại hình
-									)
-								);
-							} else {
-								// Only display products with strictly matching term_ids
-								$tax_query[] = array(
-									'taxonomy' => 'product_type',
-									'field'    => 'term_id',
-									'terms'    => $selected_product_types,
-									'operator' => 'IN'
-								);
+									);
+								} else {
+									// Cố tình tạo filter false để ko hiển thị SP nếu trang ko có danh mục nào hợp lệ
+									$tax_query[] = array(
+										'taxonomy' => 'product_cat',
+										'field'    => 'term_id',
+										'terms'    => array(0),
+										'operator' => 'IN'
+									);
+								}
 							}
 						}
 

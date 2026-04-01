@@ -70,6 +70,9 @@ add_action( 'init', function () {
 			'slug'       => 'loai-hinh',
 			'with_front' => false,
 		),
+		'meta_box_cb'       => false,
+		'show_in_rest'      => false,
+		'show_admin_column' => false,
 	) );
 } );
 

@@ -99,7 +99,6 @@ function canhcam_load_more_products() {
 	// Chỉ lấy config nếu page_id thực sự là ID của một Page (để tránh lấy nhầm Post/Term có cùng ID)
 	$is_actual_page         = ( 'page' === get_post_type($page_id) );
 	$selected_product_types = $is_actual_page ? get_field('page_product_type', $page_id) : false;
-	$include_empty          = $is_actual_page ? get_field('page_product_type_empty', $page_id) : false;
 	
 	$tax_query = array();
 
@@ -109,33 +108,41 @@ function canhcam_load_more_products() {
 			'field'    => 'slug',
 			'terms'    => $product_cat
 		);
-	}
-
-	// Filter by Product Type via ACF configuration
-	if ( !empty($selected_product_types) ) {
-		if ( $include_empty ) {
-			// Include specific terms OR products that have NO product_type term
-			$tax_query[] = array(
-				'relation' => 'OR',
-				array(
-					'taxonomy' => 'product_type',
+	} else {
+		// Filter by Product Cat matching the current page's Product Type
+		if ( !empty($selected_product_types) ) {
+			$raw_terms = get_terms(array('taxonomy' => 'product_cat', 'hide_empty' => true));
+			$valid_cat_ids = array();
+			
+			if (!is_wp_error($raw_terms)) {
+				foreach ($raw_terms as $t) {
+					$c_type = get_field('product_cat_type', $t);
+					if (!empty($c_type)) {
+						if (!empty(array_intersect((array)$c_type, (array)$selected_product_types))) {
+							$valid_cat_ids[] = $t->term_id;
+						}
+					} else {
+						// Nếu danh mục không gán loại hình => mặc định hiển thị
+						$valid_cat_ids[] = $t->term_id;
+					}
+				}
+			}
+			
+			if ( !empty($valid_cat_ids) ) {
+				$tax_query[] = array(
+					'taxonomy' => 'product_cat',
 					'field'    => 'term_id',
-					'terms'    => $selected_product_types,
+					'terms'    => $valid_cat_ids,
 					'operator' => 'IN'
-				),
-				array(
-					'taxonomy' => 'product_type',
-					'operator' => 'NOT EXISTS' // Lấy cả những SP chưa được gắn Loại hình
-				)
-			);
-		} else {
-			// Only display products with strictly matching term_ids
-			$tax_query[] = array(
-				'taxonomy' => 'product_type',
-				'field'    => 'term_id',
-				'terms'    => $selected_product_types,
-				'operator' => 'IN'
-			);
+				);
+			} else {
+				$tax_query[] = array(
+					'taxonomy' => 'product_cat',
+					'field'    => 'term_id',
+					'terms'    => array(0),
+					'operator' => 'IN'
+				);
+			}
 		}
 	}
 

@@ -14,8 +14,8 @@
             "key": "field_page_banner",
             "label": "Ảnh Banner",
             "name": "page_banner",
-            "type": "image",
-            "return_format": "array"
+            "type": "gallery",
+			"return_format": "array"
         },
         {
             "key": "field_about_tab_intro",
