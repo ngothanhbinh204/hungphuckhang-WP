@@ -50,4 +50,9 @@ if ( empty($banners) ) {
 				<?php endforeach; ?>
 			</div>
 		</div>
+		<div class="slide-controls">
+			<div class="btn-prev"><i class="fa-thin fa-chevron-left"></i></div>
+			<div class="btn-next"><i class="fa-thin fa-chevron-right"></i></div>
+		</div>
 	</div>
+</section>

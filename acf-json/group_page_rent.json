@@ -21,94 +21,105 @@
             "selected": 0
         },
         {
-            "key": "field_rent_hero_title",
-            "label": "Tiêu đề",
-            "name": "rent_hero_title",
-            "aria-label": "",
-            "type": "text",
-            "instructions": "",
-            "required": false,
-            "conditional_logic": false,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "default_value": "Hưng Phúc Khang",
-            "maxlength": "",
-            "placeholder": "",
-            "prepend": "",
-            "append": ""
-        },
-        {
-            "key": "field_rent_hero_desc",
-            "label": "Mô tả",
-            "name": "rent_hero_desc",
-            "aria-label": "",
-            "type": "textarea",
-            "instructions": "",
-            "required": false,
-            "conditional_logic": false,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "default_value": "",
-            "new_lines": "",
-            "maxlength": "",
-            "placeholder": "",
-            "rows": ""
-        },
-        {
-            "key": "field_rent_hero_bg",
-            "label": "Ảnh nền (Banner)",
-            "name": "rent_hero_bg",
-            "aria-label": "",
-            "type": "image",
-            "instructions": "",
-            "required": false,
-            "conditional_logic": false,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "return_format": "array",
-            "preview_size": "medium",
-            "library": "all",
-            "min_width": 0,
-            "min_height": 0,
-            "min_size": 0,
-            "max_width": 0,
-            "max_height": 0,
-            "max_size": 0,
-            "mime_types": ""
-        },
-        {
-            "key": "field_rent_hero_img",
-            "label": "Ảnh sản phẩm nổi bật",
-            "name": "rent_hero_img",
-            "aria-label": "",
-            "type": "image",
-            "instructions": "",
-            "required": false,
-            "conditional_logic": false,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "return_format": "array",
-            "preview_size": "medium",
-            "library": "all",
-            "min_width": 0,
-            "min_height": 0,
-            "min_size": 0,
-            "max_width": 0,
-            "max_height": 0,
-            "max_size": 0,
-            "mime_types": ""
+            "key": "field_rent_hero_banners",
+            "label": "Danh sách Banner",
+            "name": "rent_hero_banners",
+            "type": "repeater",
+            "layout": "table",
+            "button_label": "Thêm banner",
+            "sub_fields": [
+                {
+                    "key": "field_rent_banner_type",
+                    "label": "Loại banner",
+                    "name": "rent_banner_type",
+                    "type": "select",
+                    "choices": {
+                        "default": "Mặc định (Có nội dung)",
+                        "normal": "Thường (Chỉ hình ảnh)"
+                    },
+                    "default_value": "default",
+                    "return_format": "value"
+                },
+                {
+                    "key": "field_rent_normal_image",
+                    "label": "Hình ảnh (Banner thường)",
+                    "name": "rent_normal_image",
+                    "type": "image",
+                    "return_format": "array",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "normal"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_title",
+                    "label": "Tiêu đề",
+                    "name": "rent_hero_title",
+                    "type": "text",
+                    "default_value": "Hưng Phúc Khang",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_desc",
+                    "label": "Mô tả",
+                    "name": "rent_hero_desc",
+                    "type": "textarea",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_bg",
+                    "label": "Ảnh nền (Banner Mặc định)",
+                    "name": "rent_hero_bg",
+                    "type": "image",
+                    "return_format": "array",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_img",
+                    "label": "Ảnh sản phẩm nổi bật",
+                    "name": "rent_hero_img",
+                    "type": "image",
+                    "return_format": "array",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                }
+            ]
         },
         {
             "key": "field_rent_tab_partner",
@@ -128,6 +139,25 @@
             "endpoint": 0,
             "selected": 0
         },
+		{
+			"key": "field_rent_show_partner",
+			"label": "Hiển thị section đối tác",
+			"name": "rent_show_partner",
+			"type": "true_false",
+			"instructions": "",
+			"required": false,
+			"conditional_logic": false,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"message": "Hiển thị",
+			"default_value": 1,
+			"ui": 1,
+			"ui_on_text": "Có",
+			"ui_off_text": "Không"
+		},
         {
             "key": "field_rent_partners_title",
             "label": "Tiêu đề section",
@@ -343,7 +373,7 @@
             {
                 "param": "page_template",
                 "operator": "==",
-                "value": "templates\/template-rent.php"
+                "value": "templates/template-rent.php"
             }
         ]
     ],

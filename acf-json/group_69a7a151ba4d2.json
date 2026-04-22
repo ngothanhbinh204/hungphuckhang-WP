@@ -2,6 +2,107 @@
     "key": "group_69a7a151ba4d2",
     "title": "Page: Bảng Giá",
     "fields": [
+		  {
+            "key": "field_rent_hero_banners",
+            "label": "Danh sách Banner",
+            "name": "rent_hero_banners",
+            "type": "repeater",
+            "layout": "table",
+            "button_label": "Thêm banner",
+            "sub_fields": [
+                {
+                    "key": "field_rent_banner_type",
+                    "label": "Loại banner",
+                    "name": "rent_banner_type",
+                    "type": "select",
+                    "choices": {
+                        "default": "Mặc định (Có nội dung)",
+                        "normal": "Thường (Chỉ hình ảnh)"
+                    },
+                    "default_value": "default",
+                    "return_format": "value"
+                },
+                {
+                    "key": "field_rent_normal_image",
+                    "label": "Hình ảnh (Banner thường)",
+                    "name": "rent_normal_image",
+                    "type": "image",
+                    "return_format": "array",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "normal"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_title",
+                    "label": "Tiêu đề",
+                    "name": "rent_hero_title",
+                    "type": "text",
+                    "default_value": "Hưng Phúc Khang",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_desc",
+                    "label": "Mô tả",
+                    "name": "rent_hero_desc",
+                    "type": "textarea",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_bg",
+                    "label": "Ảnh nền (Banner Mặc định)",
+                    "name": "rent_hero_bg",
+                    "type": "image",
+                    "return_format": "array",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "key": "field_rent_hero_img",
+                    "label": "Ảnh sản phẩm nổi bật",
+                    "name": "rent_hero_img",
+                    "type": "image",
+                    "return_format": "array",
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_rent_banner_type",
+                                "operator": "==",
+                                "value": "default"
+                            }
+                        ]
+                    ]
+                }
+            ]
+        },
         {
             "key": "field_rent_pricing_title",
             "label": "Tiêu đề section",
