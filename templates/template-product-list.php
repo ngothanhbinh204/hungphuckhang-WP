@@ -14,6 +14,8 @@ get_template_part('modules/common/banner');
 get_template_part('template-parts/section/global/breadcrumb');
 
 $is_included_in_page = true;
+$filter_base_url     = get_permalink();
+$is_ajax_filter      = true;
 include get_template_directory() . '/archive-product.php';
 ?>
 

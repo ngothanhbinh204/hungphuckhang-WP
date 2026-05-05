@@ -670,12 +670,13 @@
                     "type": "select",
                     "instructions": "Chọn icon hiển thị cho nút CTA này.",
                     "required": 1,
-                    "conditional_logic": false,
+                    "conditional_logic": 0,
                     "wrapper": {
                         "width": "",
                         "class": "",
                         "id": ""
                     },
+                    "wpml_cf_preferences": 1,
                     "choices": {
                         "fa-envelope": "✉️  Email (fa-envelope)",
                         "fa-phone": "📞 Điện thoại (fa-phone)",
@@ -684,20 +685,20 @@
                         "fa-comment": "💬 Chat (fa-comment)",
                         "fa-comments": "💬 Comments (fa-comments)",
                         "fa-whatsapp": "✅ WhatsApp (fa-whatsapp)",
-                        "fa-zalo": "🔵 Zalo (fa-zalo)",
+                        "fa-z": "Zalo",
                         "fa-line": "🟢 LINE (fa-line)"
                     },
                     "default_value": "fa-envelope",
                     "return_format": "value",
-                    "allow_null": 0,
                     "multiple": 0,
+                    "allow_null": 0,
+                    "allow_in_bindings": 1,
                     "ui": 1,
                     "ajax": 0,
                     "placeholder": "",
                     "create_options": 0,
                     "save_options": 0,
-                    "parent_repeater": "field_footer_fixed_socials",
-                    "wpml_cf_preferences": 1
+                    "parent_repeater": "field_footer_fixed_socials"
                 },
                 {
                     "key": "field_cta_link",
@@ -1044,5 +1045,5 @@
     "description": "Cấu hình toàn site: Header, Thông tin công ty, Hỗ trợ 24\/7, Footer bottom, Nút CTA cố định",
     "show_in_rest": 0,
     "acfml_field_group_mode": "translation",
-    "modified": 1773742866
+    "modified": 1776842996
 }

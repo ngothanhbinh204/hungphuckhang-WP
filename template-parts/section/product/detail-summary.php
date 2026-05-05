@@ -1,24 +1,61 @@
 <?php
 /* ── Product Detail: Summary (Gallery, Title, Price, Meta) ── */
-$product_id = get_the_ID();
-$gallery = get_field('product_gallery'); // Gallery field
-$sku = get_field('product_sku');
-$price = get_field('product_price');
-$price_old = get_field('product_price_old');
+$product_id    = get_the_ID();
+$gallery       = get_field('product_gallery');
+$sku           = get_field('product_sku');
+$price         = get_field('product_price');
+$price_old     = get_field('product_price_old');
+$rent_price    = get_field('product_rent_price');
+$rent_price_old = get_field('product_rent_price_old');
+$rent_unit     = get_field('product_rent_price_unit') ?: '';
 $is_bestseller = get_field('product_is_bestseller');
-$discount_tag = '';
+$discount_tag  = '';
+$rent_discount_tag = '';
 
-$price = (float) $price;
-$price_old = (float) $price_old;
+$price          = (float) $price;
+$price_old      = (float) $price_old;
+$rent_price     = (float) $rent_price;
+$rent_price_old = (float) $rent_price_old;
 
 if ( $price && $price_old && $price_old > $price ) {
 	$discount_tag = '-' . round( ( $price_old - $price ) / $price_old * 100 ) . '%';
 }
-$configs = get_field('product_configs'); // Repeater (icon_class, label)
-$promotions = get_field('product_promotions'); // Repeater (text)
-$summary_specs = get_field('product_summary_specs'); // Repeater (label, value)
-$catalog_file = get_field('product_catalog'); // File
-$rental_note = get_field('product_rental_note'); // Textarea
+if ( $rent_price && $rent_price_old && $rent_price_old > $rent_price ) {
+	$rent_discount_tag = '-' . round( ( $rent_price_old - $rent_price ) / $rent_price_old * 100 ) . '%';
+}
+
+$configs       = get_field('product_configs');
+$promotions    = get_field('product_promotions');
+$summary_specs = get_field('product_summary_specs');
+$catalog_file  = get_field('product_catalog');
+$rental_note   = get_field('product_rental_note');
+
+// ── Price Mode: đọc 'product_type_price_mode' (sale|rent) từ từng term — không hardcode slug ──────
+// Editor chọn "Chức Năng Giá" khi tạo/edit Loại Hình. Slug có đổi tùy ý, logic vẫn chạy đúng.
+$product_types = get_the_terms($product_id, 'product_type');
+$type_modes    = array(); // ['sale', 'rent']
+$vat_by_mode   = array(); // ['sale' => 'note...', 'rent' => 'note...']
+$_default_vat  = '';
+if ( $product_types && !is_wp_error($product_types) ) {
+	foreach ( $product_types as $pt ) {
+		$term_key = $pt->taxonomy . '_' . $pt->term_id; // ACF taxonomy term format
+		$mode = get_field('product_type_price_mode', $term_key) ?: 'sale';
+		$note = get_field('product_type_vat_note',   $term_key) ?: '';
+		if ( !in_array($mode, $type_modes) ) {
+			$type_modes[] = $mode;
+		}
+		// Nếu nhiều term cùng mode, lấy note của term đầu tiên gặp
+		if ( !isset($vat_by_mode[$mode]) ) {
+			$vat_by_mode[$mode] = $note;
+		}
+	}
+}
+
+// Fallback: nếu chưa gán loại hình nào → hiển thị giá bán mặc định
+$show_sale_block = in_array('sale', $type_modes) || empty($type_modes);
+$show_rent_block = in_array('rent', $type_modes);
+$vat_note_sale   = isset($vat_by_mode['sale']) ? $vat_by_mode['sale'] : '';
+$vat_note_rent   = isset($vat_by_mode['rent']) ? $vat_by_mode['rent'] : '';
 ?>
 <section class="product-detail-summary">
 	<div class="container">
@@ -64,19 +101,47 @@ $rental_note = get_field('product_rental_note'); // Textarea
 			<div class="col-right" data-aos="fade-left">
 				<div class="summary-top">
 					<div class="tags">
-						<?php if ( $discount_tag ) : ?><span class="tag discount"><?php echo esc_html($discount_tag); ?></span><?php endif; ?>
+						<?php if ( $discount_tag || $rent_discount_tag ) : ?>
+							<span class="tag discount"><?php echo esc_html($discount_tag ?: $rent_discount_tag); ?></span>
+						<?php endif; ?>
 						<?php if ( $is_bestseller ) : ?><span class="tag bestseller">bestseller</span><?php endif; ?>
 					</div>
 					<?php if ( $sku ) : ?><div class="sku">SKU <?php echo esc_html($sku); ?></div><?php endif; ?>
 				</div>
 				<h1 class="product-title"><?php the_title(); ?></h1>
-				<div class="price-block">
+
+				<?php if ( $show_sale_block ) : ?>
+				<div class="price-block price-block--sale">
+					<div class="price-label"><?php _e('Giá bán', 'canhcamtheme'); ?></div>
 					<div class="price">
 						<span class="current"><?php echo $price ? number_format($price, 0, ',', '.') . 'đ' : __('Liên hệ', 'canhcamtheme'); ?></span>
-						<?php if ( $price_old ) : ?><span class="old"><?php echo number_format($price_old, 0, ',', '.') . 'đ'; ?></span><?php endif; ?>
+						<?php if ( $price_old ) : ?>
+							<span class="old"><?php echo number_format($price_old, 0, ',', '.') . 'đ'; ?></span>
+						<?php endif; ?>
 					</div>
-					<div class="vat-note"><?php _e('Giá chưa bao gồm VAT 10%', 'canhcamtheme'); ?></div>
+					<div class="vat-note"><?php echo esc_html($vat_note_sale); ?></div>
 				</div>
+				<?php endif; ?>
+
+				<?php if ( $show_rent_block ) : ?>
+				<div class="price-block price-block--rent">
+					<div class="price-label"><?php _e('Giá cho thuê', 'canhcamtheme'); ?></div>
+					<div class="price">
+						<?php if ( $rent_price ) : ?>
+							<span class="current">
+								<?php echo number_format($rent_price, 0, ',', '.'); ?>đ<span class="unit"><?php echo esc_html($rent_unit); ?></span>
+							</span>
+							<?php if ( $rent_price_old ) : ?>
+								<span class="old"><?php echo number_format($rent_price_old, 0, ',', '.'); ?>đ<span class="unit"><?php echo esc_html($rent_unit); ?></span></span>
+							<?php endif; ?>
+						<?php else : ?>
+							<span class="current"><?php _e('Liên hệ', 'canhcamtheme'); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="vat-note"><?php echo esc_html($vat_note_rent); ?></div>
+				</div>
+				<?php endif; ?>
+
 				
 				<?php if ( $configs ) : ?>
 				<div class="config-block">

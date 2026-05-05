@@ -262,10 +262,12 @@
 			e.preventDefault();
 			
 			// Reset form values
+			const sliderEl = document.getElementById('price-slider');
+			const maxVal = sliderEl ? parseInt(sliderEl.dataset.max) : 500000000;
 			$('#input-product-cat').val('');
 			$('#input-orderby').val('');
 			$('#input-min-price').val(0);
-			$('#input-max-price').val(500000000);
+			$('#input-max-price').val(maxVal);
 			
 			// Reset UI components
 			$('.category-list li').removeClass('active');
@@ -274,7 +276,8 @@
 			// Reset Slider
 			const slider = document.getElementById('price-slider');
 			if (slider && slider.noUiSlider) {
-				slider.noUiSlider.set([0, 500000000]);
+				const maxVal = parseInt(slider.dataset.max) || 500000000;
+				slider.noUiSlider.set([0, maxVal]);
 			}
 			
 			// Reset Title
@@ -294,13 +297,23 @@
 			const productCat = $('#input-product-cat').val() || '';
 			const orderby = $('#input-orderby').val() || '';
 			const pageId = productList.data('page-id') || 0; // Read the page-id
+			const productType = productList.data('product-type') || ''; // Read the product-type
 
 			// Toggle Clear Filter button
-			const hasFilter = (productCat !== '' || parseInt(minPrice) > 0 || parseInt(maxPrice) < 500000000 || orderby !== '');
+			const sliderEl = document.getElementById('price-slider');
+			const maxLimit = sliderEl ? parseInt(sliderEl.dataset.max) : 500000000;
+			const hasFilter = (productCat !== '' || parseInt(minPrice) > 0 || parseInt(maxPrice) < maxLimit || orderby !== '');
 			if (hasFilter) {
 				$('.btn-remove-filter').show();
 			} else {
 				$('.btn-remove-filter').hide();
+			}
+
+			let filterMin = '';
+			let filterMax = '';
+			if (parseInt(minPrice) > 0 || parseInt(maxPrice) < maxLimit) {
+				filterMin = minPrice;
+				filterMax = maxPrice;
 			}
 
 			if (!append) {
@@ -317,8 +330,9 @@
 					action: 'load_more_products',
 					page: page,
 					product_cat: productCat,
-					min_price: minPrice,
-					max_price: maxPrice,
+					product_type: productType,
+					min_price: filterMin,
+					max_price: filterMax,
 					orderby: orderby,
 					page_id: pageId,
 					is_load_more: productList.data('is-load-more') === true ? 'true' : 'false'
@@ -379,10 +393,12 @@
 	 
 
 		function updateURL(cat, min, max, sort) {
+			const sliderEl = document.getElementById('price-slider');
+			const maxLimit = sliderEl ? parseInt(sliderEl.dataset.max) : 500000000;
 			let url = new URL(window.location.href);
 			if (cat) url.searchParams.set('product_cat', cat); else url.searchParams.delete('product_cat');
 			if (min > 0) url.searchParams.set('min_price', min); else url.searchParams.delete('min_price');
-			if (max < 500000000) url.searchParams.set('max_price', max); else url.searchParams.delete('max_price');
+			if (max < maxLimit) url.searchParams.set('max_price', max); else url.searchParams.delete('max_price');
 			if (sort) url.searchParams.set('orderby', sort); else url.searchParams.delete('orderby');
 			window.history.pushState({}, '', url);
 		}

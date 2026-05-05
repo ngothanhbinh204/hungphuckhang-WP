@@ -2,126 +2,49 @@
     "key": "group_69a7a151ba4d2",
     "title": "Page: Bảng Giá",
     "fields": [
-		  {
-            "key": "field_rent_hero_banners",
-            "label": "Danh sách Banner",
-            "name": "rent_hero_banners",
-            "type": "repeater",
-            "layout": "table",
-            "button_label": "Thêm banner",
-            "sub_fields": [
-                {
-                    "key": "field_rent_banner_type",
-                    "label": "Loại banner",
-                    "name": "rent_banner_type",
-                    "type": "select",
-                    "choices": {
-                        "default": "Mặc định (Có nội dung)",
-                        "normal": "Thường (Chỉ hình ảnh)"
-                    },
-                    "default_value": "default",
-                    "return_format": "value"
-                },
-                {
-                    "key": "field_rent_normal_image",
-                    "label": "Hình ảnh (Banner thường)",
-                    "name": "rent_normal_image",
-                    "type": "image",
-                    "return_format": "array",
-                    "conditional_logic": [
-                        [
-                            {
-                                "field": "field_rent_banner_type",
-                                "operator": "==",
-                                "value": "normal"
-                            }
-                        ]
-                    ]
-                },
-                {
-                    "key": "field_rent_hero_title",
-                    "label": "Tiêu đề",
-                    "name": "rent_hero_title",
-                    "type": "text",
-                    "default_value": "Hưng Phúc Khang",
-                    "conditional_logic": [
-                        [
-                            {
-                                "field": "field_rent_banner_type",
-                                "operator": "==",
-                                "value": "default"
-                            }
-                        ]
-                    ]
-                },
-                {
-                    "key": "field_rent_hero_desc",
-                    "label": "Mô tả",
-                    "name": "rent_hero_desc",
-                    "type": "textarea",
-                    "conditional_logic": [
-                        [
-                            {
-                                "field": "field_rent_banner_type",
-                                "operator": "==",
-                                "value": "default"
-                            }
-                        ]
-                    ]
-                },
-                {
-                    "key": "field_rent_hero_bg",
-                    "label": "Ảnh nền (Banner Mặc định)",
-                    "name": "rent_hero_bg",
-                    "type": "image",
-                    "return_format": "array",
-                    "conditional_logic": [
-                        [
-                            {
-                                "field": "field_rent_banner_type",
-                                "operator": "==",
-                                "value": "default"
-                            }
-                        ]
-                    ]
-                },
-                {
-                    "key": "field_rent_hero_img",
-                    "label": "Ảnh sản phẩm nổi bật",
-                    "name": "rent_hero_img",
-                    "type": "image",
-                    "return_format": "array",
-                    "conditional_logic": [
-                        [
-                            {
-                                "field": "field_rent_banner_type",
-                                "operator": "==",
-                                "value": "default"
-                            }
-                        ]
-                    ]
-                }
-            ]
-        },
         {
-            "key": "field_rent_pricing_title",
+            "key": "field_69f81af2b0bb6",
             "label": "Tiêu đề section",
-            "name": "rent_pricing_title",
+            "name": "",
             "aria-label": "",
             "type": "text",
             "instructions": "",
-            "required": false,
+            "required": 0,
             "conditional_logic": 0,
             "wrapper": {
                 "width": "",
                 "class": "",
                 "id": ""
             },
-            "default_value": "BẢNG GIÁ CHO THUÊ",
+            "wpml_cf_preferences": 2,
+            "default_value": "",
             "maxlength": "",
+            "allow_in_bindings": 0,
             "placeholder": "",
             "prepend": "",
             "append": ""
+        },
+        {
+            "key": "field_69e9a39cb25ff",
+            "label": "Mô tả ngắn",
+            "name": "rent_pricing_sub_title",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "wpml_cf_preferences": 2,
+            "default_value": "",
+            "allow_in_bindings": 0,
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 1,
+            "delay": 0
         },
         {
             "key": "field_rent_pricing_plans",
@@ -130,171 +53,71 @@
             "aria-label": "",
             "type": "repeater",
             "instructions": "",
-            "required": false,
+            "required": 0,
             "conditional_logic": 0,
             "wrapper": {
                 "width": "",
                 "class": "",
                 "id": ""
             },
-            "layout": "block",
-            "button_label": "Thêm gói giá",
+            "wpml_cf_preferences": 3,
+            "layout": "table",
+            "pagination": 0,
             "min": 0,
             "max": 0,
-            "rows_per_page": 20,
             "collapsed": "",
+            "button_label": "Thêm gói giá",
+            "rows_per_page": 20,
             "sub_fields": [
                 {
-                    "key": "field_plan_badge",
-                    "label": "Nhãn (Badge - vd: PREMIUM)",
-                    "name": "badge",
+                    "key": "field_69e9a1e8c301d",
+                    "label": "Hình ảnh",
+                    "name": "image",
                     "aria-label": "",
-                    "type": "text",
+                    "type": "image",
                     "instructions": "",
-                    "required": false,
-                    "conditional_logic": false,
+                    "required": 0,
+                    "conditional_logic": 0,
                     "wrapper": {
                         "width": "",
                         "class": "",
                         "id": ""
                     },
+                    "wpml_cf_preferences": 3,
+                    "return_format": "array",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "",
+                    "allow_in_bindings": 0,
+                    "preview_size": "medium",
+                    "parent_repeater": "field_rent_pricing_plans"
+                },
+                {
+                    "key": "field_69e9a20dc301e",
+                    "label": "Nội dung",
+                    "name": "description",
+                    "aria-label": "",
+                    "type": "wysiwyg",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "wpml_cf_preferences": 2,
                     "default_value": "",
-                    "maxlength": "",
-                    "placeholder": "",
-                    "prepend": "",
-                    "append": "",
-                    "parent_repeater": "field_rent_pricing_plans"
-                },
-                {
-                    "key": "field_plan_price",
-                    "label": "Giá (số)",
-                    "name": "price",
-                    "aria-label": "",
-                    "type": "number",
-                    "instructions": "",
-                    "required": false,
-                    "conditional_logic": false,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "default_value": "",
-                    "min": "",
-                    "max": "",
-                    "step": "",
-                    "placeholder": "",
-                    "prepend": "",
-                    "append": "",
-                    "parent_repeater": "field_rent_pricing_plans"
-                },
-                {
-                    "key": "field_plan_unit",
-                    "label": "Đơn vị (vd: Tháng)",
-                    "name": "unit",
-                    "aria-label": "",
-                    "type": "text",
-                    "instructions": "",
-                    "required": false,
-                    "conditional_logic": false,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "default_value": "Tháng",
-                    "maxlength": "",
-                    "placeholder": "",
-                    "prepend": "",
-                    "append": "",
-                    "parent_repeater": "field_rent_pricing_plans"
-                },
-                {
-                    "key": "field_plan_note",
-                    "label": "Ghi chú footer",
-                    "name": "note",
-                    "aria-label": "",
-                    "type": "text",
-                    "instructions": "",
-                    "required": false,
-                    "conditional_logic": false,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "default_value": "",
-                    "maxlength": "",
-                    "placeholder": "",
-                    "prepend": "",
-                    "append": "",
-                    "parent_repeater": "field_rent_pricing_plans"
-                },
-                {
-                    "key": "field_plan_features",
-                    "label": "Danh sách tính năng",
-                    "name": "features",
-                    "aria-label": "",
-                    "type": "repeater",
-                    "instructions": "",
-                    "required": false,
-                    "conditional_logic": false,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "layout": "table",
-                    "min": 0,
-                    "max": 0,
-                    "rows_per_page": 20,
-                    "button_label": "Add Row",
-                    "collapsed": "",
-                    "sub_fields": [
-                        {
-                            "key": "field_feature_text",
-                            "label": "Nội dung tính năng",
-                            "name": "text",
-                            "aria-label": "",
-                            "type": "wysiwyg",
-                            "instructions": "",
-                            "required": 0,
-                            "conditional_logic": 0,
-                            "wrapper": {
-                                "width": "",
-                                "class": "",
-                                "id": ""
-                            },
-                            "default_value": "",
-                            "allow_in_bindings": 0,
-                            "tabs": "all",
-                            "toolbar": "full",
-                            "media_upload": 1,
-                            "delay": 0,
-                            "parent_repeater": "field_plan_features"
-                        },
-                        {
-                            "key": "field_feature_active",
-                            "label": "Có hỗ trợ?",
-                            "name": "is_active",
-                            "aria-label": "",
-                            "type": "true_false",
-                            "instructions": "",
-                            "required": false,
-                            "conditional_logic": false,
-                            "wrapper": {
-                                "width": "",
-                                "class": "",
-                                "id": ""
-                            },
-                            "default_value": 1,
-                            "ui": 1,
-                            "message": "",
-                            "ui_on_text": "",
-                            "ui_off_text": "",
-                            "parent_repeater": "field_plan_features"
-                        }
-                    ],
+                    "allow_in_bindings": 0,
+                    "tabs": "all",
+                    "toolbar": "full",
+                    "media_upload": 1,
+                    "delay": 0,
                     "parent_repeater": "field_rent_pricing_plans"
                 }
             ]
@@ -318,5 +141,6 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1772593677
+    "acfml_field_group_mode": "localization",
+    "modified": 1777870708
 }

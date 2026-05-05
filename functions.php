@@ -67,12 +67,18 @@ add_action( 'wp_ajax_load_more_products', 'canhcam_load_more_products' );
 add_action( 'wp_ajax_nopriv_load_more_products', 'canhcam_load_more_products' );
 
 function canhcam_load_more_products() {
-	$paged       = isset($_POST['page']) ? intval($_POST['page']) : 1;
-	$post_type   = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : 'product';
-	$product_cat = isset($_POST['product_cat']) ? sanitize_text_field($_POST['product_cat']) : '';
-	$min_price   = isset($_POST['min_price']) ? intval($_POST['min_price']) : 0;
-	$max_price   = isset($_POST['max_price']) ? intval($_POST['max_price']) : 500000000;
-	$orderby_val = isset($_POST['orderby']) ? sanitize_text_field($_POST['orderby']) : '';
+	$paged            = isset($_POST['page'])         ? intval($_POST['page'])                      : 1;
+	$post_type        = isset($_POST['post_type'])    ? sanitize_text_field($_POST['post_type'])    : 'product';
+	$product_cat      = isset($_POST['product_cat'])  ? sanitize_text_field($_POST['product_cat'])  : '';
+	// product_type có thể là 1 slug hoặc nhiều slug ngăn cách bởi dấu phẩy (comma-separated)
+	// Ví dụ: 'cho-thue' hoặc 'ban-may,cho-thue' khi trang chọn nhiều Loại Hình trong ACF
+	$product_type_raw = isset($_POST['product_type']) ? sanitize_text_field($_POST['product_type']) : '';
+	$product_type     = !empty($product_type_raw)
+		? array_map('sanitize_text_field', array_filter(explode(',', $product_type_raw)))
+		: array();
+	$min_price       = isset($_POST['min_price']) && $_POST['min_price'] !== '' ? intval($_POST['min_price']) : '';
+	$max_price       = isset($_POST['max_price']) && $_POST['max_price'] !== '' ? intval($_POST['max_price']) : '';
+	$orderby_val     = isset($_POST['orderby'])      ? sanitize_text_field($_POST['orderby'])        : '';
 
 	$args = array(
 		'post_type'      => $post_type,
@@ -81,140 +87,104 @@ function canhcam_load_more_products() {
 		'post_status'    => 'publish',
 	);
 
-	// Only apply Price Meta Query if user has filtered by price (not defaults)
-	// This ensures products without price keys are still shown by default.
-	if ( $min_price > 0 || $max_price < 500000000 ) {
+	// Chỉ áp dụng Price Meta Query khi người dùng thực sự lọc theo giá (được gửi từ JS)
+	if ( $min_price !== '' && $max_price !== '' ) {
 		$args['meta_query'] = array(
 			array(
 				'key'     => 'product_price',
 				'value'   => array($min_price, $max_price),
 				'type'    => 'NUMERIC',
-				'compare' => 'BETWEEN'
-			)
+				'compare' => 'BETWEEN',
+			),
 		);
 	}
 
-	// ──  ACF: Lấy cấu hình Loại hình sản phẩm hiển thị của Trang hiện tại ──
-	$page_id = isset($_POST['page_id']) ? intval($_POST['page_id']) : 0;
-	// Chỉ lấy config nếu page_id thực sự là ID của một Page (để tránh lấy nhầm Post/Term có cùng ID)
-	$is_actual_page         = ( 'page' === get_post_type($page_id) );
-	$selected_product_types = $is_actual_page ? get_field('page_product_type', $page_id) : false;
-	
-	$tax_query = array();
+	$tax_query = array('relation' => 'AND');
 
-	if ( $product_cat ) {
+	// 1. Lọc theo Loại Hình (product_type) — gán trực tiếp vào sản phẩm
+	if ( !empty($product_type) ) {
+		$tax_query[] = array(
+			'taxonomy' => 'product_type',
+			'field'    => 'slug',
+			'terms'    => $product_type,
+		);
+	}
+
+	// 2. Lọc theo Danh Mục (product_cat) nếu người dùng chọn cụ thể
+	if ( !empty($product_cat) ) {
 		$tax_query[] = array(
 			'taxonomy' => 'product_cat',
 			'field'    => 'slug',
-			'terms'    => $product_cat
+			'terms'    => $product_cat,
 		);
-	} else {
-		// Filter by Product Cat matching the current page's Product Type
-		if ( !empty($selected_product_types) ) {
-			$raw_terms = get_terms(array('taxonomy' => 'product_cat', 'hide_empty' => true));
-			$valid_cat_ids = array();
-			
-			if (!is_wp_error($raw_terms)) {
-				foreach ($raw_terms as $t) {
-					$c_type = get_field('product_cat_type', $t);
-					if (!empty($c_type)) {
-						if (!empty(array_intersect((array)$c_type, (array)$selected_product_types))) {
-							$valid_cat_ids[] = $t->term_id;
-						}
-					} else {
-						// Nếu danh mục không gán loại hình => mặc định hiển thị
-						$valid_cat_ids[] = $t->term_id;
-					}
-				}
-			}
-			
-			if ( !empty($valid_cat_ids) ) {
-				$tax_query[] = array(
-					'taxonomy' => 'product_cat',
-					'field'    => 'term_id',
-					'terms'    => $valid_cat_ids,
-					'operator' => 'IN'
-				);
-			} else {
-				$tax_query[] = array(
-					'taxonomy' => 'product_cat',
-					'field'    => 'term_id',
-					'terms'    => array(0),
-					'operator' => 'IN'
-				);
-			}
-		}
 	}
 
-	// Apply taxonomy queries if not empty
-	if ( !empty($tax_query) ) {
-		$tax_query['relation'] = 'AND';
+	// Áp dụng tax_query nếu có điều kiện
+	if ( count($tax_query) > 1 ) {
 		$args['tax_query'] = $tax_query;
 	}
 
 	// Sort logic
-	if ($orderby_val == 'price') {
+	if ( $orderby_val === 'price' ) {
 		$args['meta_key'] = 'product_price';
 		$args['orderby']  = 'meta_value_num';
 		$args['order']    = 'ASC';
-	} elseif ($orderby_val == 'price-desc') {
+	} elseif ( $orderby_val === 'price-desc' ) {
 		$args['meta_key'] = 'product_price';
 		$args['orderby']  = 'meta_value_num';
 		$args['order']    = 'DESC';
-	} elseif ($orderby_val == 'date') {
+	} elseif ( $orderby_val === 'date' ) {
 		$args['orderby'] = 'date';
 		$args['order']   = 'DESC';
 	}
 
-	$query = new WP_Query($args);
+	$query     = new WP_Query($args);
 	$max_pages = $query->max_num_pages;
 
 	ob_start();
 	if ( $query->have_posts() ) :
 		while ( $query->have_posts() ) : $query->the_post(); ?>
-			<div class="product-column">
-				<?php get_template_part('template-parts/content', 'product'); ?>
-			</div>
-		<?php endwhile;
+<div class="product-column">
+	<?php get_template_part('template-parts/content', 'product'); ?>
+</div>
+<?php endwhile;
 	else :
-		if($paged == 1) : ?>
-			<p class="no-products"><?php _e('Không tìm thấy sản phẩm nào.', 'canhcamtheme'); ?></p>
-		<?php endif;
+		if ( $paged == 1 ) : ?>
+<p class="no-products"><?php _e('Không tìm thấy sản phẩm nào.', 'canhcamtheme'); ?></p>
+<?php   endif;
 	endif;
 	$html = ob_get_clean();
 
-	// Generation of the updated pagination components
-	$pagination = '';
+	$pagination        = '';
 	$is_load_more_mode = isset($_POST['is_load_more']) && $_POST['is_load_more'] === 'true';
 
 	if ( $is_load_more_mode ) {
-		// Return Load More Button if there are more pages
 		if ( $max_pages > 1 ) {
 			ob_start(); ?>
-			<div class="load-more-container text-center mt-8 flex justify-center gap-4">
-				<button id="load-more-products" 
-						data-current-page="1" 
-						data-max-pages="<?php echo $max_pages; ?>"
-						data-post-type="<?php echo esc_attr($post_type); ?>"
-						data-product-cat="<?php echo esc_attr($product_cat); ?>"
-						data-min-price="<?php echo $min_price; ?>"
-						data-max-price="<?php echo $max_price; ?>"
-						class="btn btn-primary btn-load-more">
-					<?php _e('Xem thêm', 'canhcamtheme'); ?>
-					<i class="fa-light fa-chevron-down"></i>
-				</button>
-				<button id="show-less-products" class="btn btn-primary btn-show-less" style="display: none;">
-					<?php _e('Thu gọn', 'canhcamtheme'); ?>
-					<i class="fa-light fa-chevron-up"></i>
-				</button>
-			</div>
-			<?php 
+<div class="load-more-container text-center mt-8 flex justify-center gap-4">
+	<button id="load-more-products"
+			data-current-page="1"
+			data-max-pages="<?php echo $max_pages; ?>"
+			data-post-type="<?php echo esc_attr($post_type); ?>"
+			data-product-cat="<?php echo esc_attr($product_cat); ?>"
+			data-product-type="<?php echo esc_attr($product_type_raw); ?>"
+			data-min-price="<?php echo $min_price; ?>"
+			data-max-price="<?php echo $max_price; ?>"
+			class="btn btn-primary btn-load-more">
+		<?php _e('Xem thêm', 'canhcamtheme'); ?>
+		<i class="fa-light fa-chevron-down"></i>
+	</button>
+	<button id="show-less-products" class="btn btn-primary btn-show-less" style="display: none;">
+		<?php _e('Thu gọn', 'canhcamtheme'); ?>
+		<i class="fa-light fa-chevron-up"></i>
+	</button>
+</div>
+<?php
 			$pagination = ob_get_clean();
 		}
 	} else {
-		// Return standard pagination links
 		$pagination = paginate_links( array(
-			'base'      => add_query_arg( 'page', '%#%' ),
+			'base'      => add_query_arg('page', '%#%'),
 			'format'    => '',
 			'total'     => $max_pages,
 			'current'   => $paged,
@@ -222,11 +192,12 @@ function canhcam_load_more_products() {
 			'next_text' => '<i class="fa-light fa-chevron-right"></i>',
 			'type'      => 'list',
 			'add_args'  => array(
-				'product_cat' => $product_cat,
-				'min_price'   => $min_price,
-				'max_price'   => $max_price,
-				'orderby'     => $orderby_val,
-			)
+				'product_cat'  => $product_cat,
+				'product_type' => $product_type_raw,
+				'min_price'    => $min_price,
+				'max_price'    => $max_price,
+				'orderby'      => $orderby_val,
+			),
 		) );
 	}
 
@@ -274,35 +245,35 @@ function filter_news_by_category_handler() {
 			if ( $count % 3 === 0 ) echo '<div class="swiper-slide"><div class="news-group">';
 			
 			if ( $count % 3 === 0 ) : ?>
-				<div class="news-item big-item">
-					<a class="img" href="<?php the_permalink(); ?>">
-						<?php the_post_thumbnail('large'); ?>
-					</a>
-					<div class="content">
-						<div class="meta">
-							<span class="date"><?php echo get_the_date('d.m.Y'); ?></span>
-							<span class="category"><?php echo get_the_category()[0]->name; ?></span>
-						</div>
-						<h3 class="title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-						<p class="desc"><?php echo wp_trim_words(get_the_excerpt(), 999); ?></p>
-					</div>
-				</div>
-				<div class="small-items">
-			<?php else : ?>
-				<div class="news-item small-item">
-					<a class="img" href="<?php the_permalink(); ?>">
-						<?php the_post_thumbnail('medium'); ?>
-					</a>
-					<div class="content">
-						<div class="meta">
-							<span class="date"><?php echo get_the_date('d.m.Y'); ?></span>
-							<span class="category"><?php echo get_the_category()[0]->name; ?></span>
-						</div>
-						<h3 class="title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-						<p class="desc"><?php echo wp_trim_words(get_the_excerpt(), 20); ?></p>
-					</div>
-				</div>
-			<?php endif;
+<div class="news-item big-item">
+	<a class="img" href="<?php the_permalink(); ?>">
+		<?php the_post_thumbnail('large'); ?>
+	</a>
+	<div class="content">
+		<div class="meta">
+			<span class="date"><?php echo get_the_date('d.m.Y'); ?></span>
+			<span class="category"><?php echo get_the_category()[0]->name; ?></span>
+		</div>
+		<h3 class="title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+		<p class="desc"><?php echo wp_trim_words(get_the_excerpt(), 999); ?></p>
+	</div>
+</div>
+<div class="small-items">
+	<?php else : ?>
+	<div class="news-item small-item">
+		<a class="img" href="<?php the_permalink(); ?>">
+			<?php the_post_thumbnail('medium'); ?>
+		</a>
+		<div class="content">
+			<div class="meta">
+				<span class="date"><?php echo get_the_date('d.m.Y'); ?></span>
+				<span class="category"><?php echo get_the_category()[0]->name; ?></span>
+			</div>
+			<h3 class="title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+			<p class="desc"><?php echo wp_trim_words(get_the_excerpt(), 20); ?></p>
+		</div>
+	</div>
+	<?php endif;
 
 			if ( $count % 3 === 2 || $count === $query->post_count - 1 ) {
 				echo '</div></div></div>'; // Close small-items, news-group, swiper-slide
@@ -370,10 +341,10 @@ function filter_products_by_category_handler() {
 				}
 			}
 			?>
-			<div class="swiper-slide h-auto" data-category="<?php echo esc_attr($cat_slugs); ?>">
-				<?php get_template_part('template-parts/content', 'product'); ?>
-			</div>
-			<?php
+	<div class="swiper-slide h-auto" data-category="<?php echo esc_attr($cat_slugs); ?>">
+		<?php get_template_part('template-parts/content', 'product'); ?>
+	</div>
+	<?php
 		endwhile;
 		wp_reset_postdata();
 	else :
@@ -390,8 +361,73 @@ function filter_products_by_category_handler() {
 	die();
 }
 
-
-
-
-
-
+if (is_admin()) {
+        $userID    = get_current_user_id();
+        $user_meta = get_userdata($userID);
+        $user_role = $user_meta->roles;
+        if ($userID) {
+                define('WP_AUTO_UPDATE_CORE', false);
+                define('AUTOMATIC_UPDATER_DISABLED', true);
+                add_filter('auto_update_plugin', '__return_false');
+                add_filter('auto_update_theme', '__return_false');
+                add_action('admin_menu', 'cc_remove_menus');
+                add_action('admin_menu', 'cc_remove_unnecessary_wordpress_menus', 999);
+        }
+        function cc_remove_menus()
+        {
+                remove_menu_page('plugins.php');
+                remove_menu_page('edit.php?post_type=acf-field-group');
+        }
+        function cc_remove_unnecessary_wordpress_menus()
+        {
+                remove_menu_page('edit.php?post_type=acf');
+        }
+}
+function remove_wp_version_strings($src)
+{
+        global $wp_version;
+        parse_str(parse_url($src, PHP_URL_QUERY), $query);
+        if (!empty($query['ver']) && $query['ver'] === $wp_version) {
+                $src = remove_query_arg('ver', $src);
+        }
+        return $src;
+}
+add_filter('script_loader_src', 'remove_wp_version_strings');
+add_filter('style_loader_src', 'remove_wp_version_strings');
+function wp_remove_version()
+{
+        return '';
+}
+add_filter('the_generator', 'wp_remove_version');
+// Disable Update Notifications
+function hide_update_notice_to_all_but_admin_users()
+{
+        if (!current_user_can('update_core')) {
+                remove_action('admin_notices', 'update_nag', 3);
+        }
+}
+add_action('admin_head', 'hide_update_notice_to_all_but_admin_users', 1);
+function remove_core_updates()
+{
+        global $wp_version;
+        return (object) array('last_checked' => time(), 'version_checked' => $wp_version,);
+}
+add_filter('pre_site_transient_update_core', 'remove_core_updates');
+add_filter('pre_site_transient_update_plugins', 'remove_core_updates');
+add_filter('pre_site_transient_update_themes', 'remove_core_updates');
+// Disable Admin Notices
+function pr_disable_admin_notices()
+{
+        global $wp_filter;
+        if (is_user_admin()) {
+                if (isset($wp_filter['user_admin_notices'])) {
+                        unset($wp_filter['user_admin_notices']);
+                }
+        } elseif (isset($wp_filter['admin_notices'])) {
+                unset($wp_filter['admin_notices']);
+        }
+        if (isset($wp_filter['all_admin_notices'])) {
+                unset($wp_filter['all_admin_notices']);
+        }
+}
+add_action('admin_print_scripts', 'pr_disable_admin_notices');

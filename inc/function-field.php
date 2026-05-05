@@ -215,117 +215,65 @@ function add_field_product_list_settings()
 }
 add_action('acf/init', 'add_field_product_list_settings');
 
-function add_field_product_cat_settings()
-{
+// Loại Hình (product_type) giờ được gán trực tiếp vào sản phẩm qua taxonomy checkbox mặc định
+
+/**
+ * ACF: Cài Đặt Loại Hình Sản Phẩm (product_type taxonomy)
+ * Cho phép nhập VAT note ngay tại từng term Loại Hình.
+ * Ví dụ: Bán Máy → "Giá chưa bao gồm VAT 10%"
+ *         Cho Thuê → "Giá thuê chưa bao gồm VAT 10%"
+ */
+function add_field_product_type_settings() {
 	acf_add_local_field_group(array(
-		'key' => 'group_product_cat_settings',
-		'title' => 'Cài Đặt Danh Mục',
+		'key'    => 'group_product_type_settings',
+		'title'  => 'Cài Đặt Loại Hình',
 		'fields' => array(
 			array(
-				'key' => 'product_cat_type',
-				'label' => 'Thuộc Loại Hình Sản Phẩm Nào?',
-				'name' => 'product_cat_type',
-				'type' => 'taxonomy',
-				'instructions' => 'Chọn Loại hình (VD: Bán máy, Cho thuê) mà Danh mục này thuộc về. Nếu để trống, danh mục này sẽ xuất hiện ở tất cả các trang.',
-				'taxonomy' => 'product_type',
-				'field_type' => 'multi_select',
-				'return_format' => 'id',
-				'add_term' => 0,
-				'load_terms' => 0,
-				'save_terms' => 0,
+				'key'           => 'field_product_type_price_mode',
+				'label'         => 'Chức Năng Giá',
+				'name'          => 'product_type_price_mode',
+				'type'          => 'select',
+				'instructions'  => 'Xác định loại giá hiển thị ở trang chi tiết sản phẩm. "Giá Bán" dùng product_price, "Giá Cho Thuê" dùng product_rent_price.',
+				'required'      => 1,
+				'choices'       => array(
+					'sale' => '💰 Giá Bán (hiển thị price-block giá mua)',
+					'rent' => '🔄 Giá Cho Thuê (hiển thị price-block giá thuê)',
+				),
+				'default_value' => 'sale',
+				'return_format' => 'value',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'ajax'          => 0,
+				'wrapper'       => array('width' => '', 'class' => '', 'id' => ''),
+			),
+			array(
+				'key'          => 'field_product_type_vat_note',
+				'label'        => 'Ghi Chú VAT (hiển thị dưới giá)',
+				'name'         => 'product_type_vat_note',
+				'type'         => 'text',
+				'instructions' => 'Nhập nội dung hiển thị bên dưới giá ứng với loại hình này. Ví dụ: "Giá chưa bao gồm VAT 10%"',
+				'required'     => 0,
+				'default_value' => __('Giá chưa bao gồm VAT 10%', 'canhcamtheme'),
+				'placeholder'  => 'Giá chưa bao gồm VAT 10%',
+				'wrapper'      => array('width' => '', 'class' => '', 'id' => ''),
 			),
 		),
 		'location' => array(
 			array(
 				array(
-					'param' => 'taxonomy',
+					'param'    => 'taxonomy',
 					'operator' => '==',
-					'value' => 'product_cat',
+					'value'    => 'product_type',
 				),
 			),
 		),
-		'menu_order' => 0,
-		'position' => 'normal',
-		'style' => 'default',
-		'label_placement' => 'top',
+		'menu_order'            => 0,
+		'position'              => 'normal',
+		'style'                 => 'default',
+		'label_placement'       => 'top',
 		'instruction_placement' => 'label',
-		'hide_on_screen' => '',
+		'hide_on_screen'        => '',
 	));
 }
-add_action('acf/init', 'add_field_product_cat_settings');
-
-
-// add cột ở admin 
-
-add_filter('manage_edit-product_cat_columns', function ($columns) {
-    $columns['product_cat_type'] = 'Loại sản phẩm';
-    return $columns;
-});
-
-add_filter('manage_product_cat_custom_column', function ($content, $column_name, $term_id) {
-
-    if ($column_name === 'product_cat_type') {
-
-        $terms = get_field('product_cat_type', 'product_cat_' . $term_id);
-
-        if (!empty($terms)) {
-
-            $names = array_map(function ($term_id) {
-                $term = get_term($term_id);
-                return $term ? $term->name : '';
-            }, $terms);
-
-            $content = implode(', ', $names);
-
-        } else {
-            $content = '—';
-        }
-    }
-
-    return $content;
-
-}, 10, 3);
-
-// add cột hiển thị Loại Hình (móc từ product_cat) ở màn list Sản Phẩm
-add_filter('manage_edit-product_columns', function ($columns) {
-    $new_columns = array();
-    foreach ($columns as $key => $title) {
-        $new_columns[$key] = $title;
-        // Chèn vào vị trí ngay sau cột Danh Mục
-        if ($key === 'taxonomy-product_cat') {
-            $new_columns['product_cat_type_col'] = 'Loại Hình';
-        }
-    }
-    // Nếu ko thấy cột Danh Mục gốc thì ném xuống cuối
-    if (!isset($new_columns['product_cat_type_col'])) {
-        $new_columns['product_cat_type_col'] = 'Loại Hình';
-    }
-    return $new_columns;
-});
-
-add_action('manage_product_posts_custom_column', function ($column_name, $post_id) {
-    if ($column_name === 'product_cat_type_col') {
-        $terms = get_the_terms($post_id, 'product_cat');
-        if ($terms && !is_wp_error($terms)) {
-            $types_found = array();
-            foreach ($terms as $term) {
-                $cat_types = get_field('product_cat_type', $term);
-                if (!empty($cat_types)) {
-                    foreach ($cat_types as $type_id) {
-                        $type_term = get_term($type_id, 'product_type');
-                        if ($type_term && !is_wp_error($type_term)) {
-                            $types_found[$type_term->term_id] = $type_term->name;
-                        }
-                    }
-                }
-            }
-            if (!empty($types_found)) {
-                echo implode(', ', $types_found);
-            } else {
-                echo '—';
-            }
-        } else {
-            echo '—';
-        }
-    }
-}, 10, 2);
+add_action('acf/init', 'add_field_product_type_settings');

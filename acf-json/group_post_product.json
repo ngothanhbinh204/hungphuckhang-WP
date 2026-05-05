@@ -43,6 +43,25 @@
             "wpml_cf_preferences": 2
         },
         {
+            "key": "field_prod_sale_price_heading",
+            "label": "💰 NHẬP GIÁ BÁN",
+            "name": "",
+            "aria-label": "",
+            "type": "message",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "Các trường bên dưới dành cho sản phẩm có Loại Hình cấu hình Chức Năng Giá là 'Giá Bán'.",
+            "new_lines": "wpautop",
+            "esc_html": 0,
+            "wpml_cf_preferences": 1
+        },
+        {
             "key": "field_prod_price",
             "label": "Giá hiện tại (số)",
             "name": "product_price",
@@ -52,7 +71,7 @@
             "required": false,
             "conditional_logic": false,
             "wrapper": {
-                "width": "",
+                "width": "50",
                 "class": "",
                 "id": ""
             },
@@ -75,7 +94,7 @@
             "required": false,
             "conditional_logic": false,
             "wrapper": {
-                "width": "",
+                "width": "50",
                 "class": "",
                 "id": ""
             },
@@ -87,6 +106,92 @@
             "prepend": "",
             "append": "",
             "wpml_cf_preferences": 3
+        },
+        {
+            "key": "field_prod_rent_price_heading",
+            "label": "🔄 NHẬP GIÁ CHO THUÊ",
+            "name": "",
+            "aria-label": "",
+            "type": "message",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "Các trường bên dưới dành cho sản phẩm có Loại Hình cấu hình Chức Năng Giá là 'Giá Cho Thuê'.",
+            "new_lines": "wpautop",
+            "esc_html": 0,
+            "wpml_cf_preferences": 1
+        },
+        {
+            "key": "field_prod_rent_price",
+            "label": "Giá cho thuê hiện tại (số)",
+            "name": "product_rent_price",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Để trống nếu muốn hiển thị 'Liên hệ'.",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "40",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": "",
+            "max": "",
+            "step": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": "",
+            "wpml_cf_preferences": 3
+        },
+        {
+            "key": "field_prod_rent_price_old",
+            "label": "Giá cho thuê cũ (số)",
+            "name": "product_rent_price_old",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Nhập giá cũ để tính % giảm giá. Để trống nếu không có.",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "30",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": "",
+            "max": "",
+            "step": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": "",
+            "wpml_cf_preferences": 3
+        },
+        {
+            "key": "field_prod_rent_price_unit",
+            "label": "Đơn vị tính giá thuê",
+            "name": "product_rent_price_unit",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Nhãn hiển thị sau giá thuê. Ví dụ: /tháng, /năm, /ngày, /quý... Mặc định: /tháng",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "30",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "/tháng",
+            "maxlength": 20,
+            "placeholder": "/tháng",
+            "prepend": "",
+            "append": "",
+            "wpml_cf_preferences": 2
         },
         {
             "key": "field_prod_is_bestseller",
@@ -548,5 +653,5 @@
     "description": "Cấu hình chi tiết cho từng sản phẩm",
     "show_in_rest": 0,
     "acfml_field_group_mode": "localization",
-    "modified": 1773388492
+    "modified": 1746453600
 }

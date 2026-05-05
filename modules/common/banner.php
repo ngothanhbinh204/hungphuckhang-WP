@@ -54,29 +54,34 @@ if ( empty($banners) ) {
         'alt' => $alt_text
     );
 }
+
+$has_multiple = count($banners) > 1;
 ?>
 
 <section class="page-banner-main banner-2">
-	<div class="banner-slide" data-slide-count="<?php echo count($banners); ?>">
+	<?php if ( $has_multiple ) : ?>
+	<div class="banner-slide">
 		<div class="swiper">
 			<div class="swiper-wrapper">
 				<?php foreach ( $banners as $banner ) : ?>
-					<div class="swiper-slide">
-						<div class="slide-item">
-							<div class="slide-bg">
-								<a class="img-ratio ratio:pt-[1200_1920] lg:ratio:pt-[880_1920]" href="#">
-									<img class="lozad" data-src="<?php echo esc_url($banner['url']); ?>" alt="<?php echo esc_attr($banner['alt']); ?>">
-								</a>
-							</div>
-						</div>
+				<div class="swiper-slide">
+					<div class="img img-ratio pt-[calc(664/1920*100rem)]">
+						<img class="lozad" data-src="<?php echo esc_url($banner['url']); ?>"
+							alt="<?php echo esc_attr($banner['alt']); ?>" />
 					</div>
+				</div>
 				<?php endforeach; ?>
 			</div>
-			<div class="swiper-pagination"></div>
 		</div>
 		<div class="slide-controls">
 			<div class="btn-prev"><i class="fa-thin fa-chevron-left"></i></div>
 			<div class="btn-next"><i class="fa-thin fa-chevron-right"></i></div>
 		</div>
 	</div>
+	<?php else : ?>
+	<div class="img img-ratio pt-[calc(664/1920*100rem)]">
+		<img class="lozad" data-src="<?php echo esc_url($banners[0]['url']); ?>"
+			alt="<?php echo esc_attr($banners[0]['alt']); ?>" />
+	</div>
+	<?php endif; ?>
 </section>
